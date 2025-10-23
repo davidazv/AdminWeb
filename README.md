@@ -7,21 +7,6 @@ Para ejecutar este proyecto frontend, necesitas configurar las siguientes variab
 ```bash
 # API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:3000
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
-
-# Authentication
-NEXT_PUBLIC_JWT_SECRET=tu_clave_secreta_jwt_frontend
-
-# Application Configuration
-NEXT_PUBLIC_APP_NAME=OFraud Dashboard
-NEXT_PUBLIC_APP_VERSION=1.0.0
-
-# File Upload Configuration
-NEXT_PUBLIC_MAX_FILE_SIZE=5242880
-NEXT_PUBLIC_ALLOWED_FILE_TYPES=image/jpeg,image/png,image/gif,application/pdf
-
-# Environment
-NODE_ENV=development
 ```
 
 **Nota:** Las variables que comienzan con `NEXT_PUBLIC_` son visibles en el cliente. Nunca pongas información sensible en estas variables. Reemplaza los valores de ejemplo con tu configuración real.
