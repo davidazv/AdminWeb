@@ -398,8 +398,7 @@ export default function ActualizarPage({
                   Usuario
                 </label>
                 <p className="mt-1 text-sm text-foreground">
-                  Usuario ID: {report.user_id}
-                  {report.is_anonymous && " (Anónimo)"}
+                  {report.is_anonymous ? "Anónimo" : (report.user_name || `Usuario ID: ${report.user_id}`)}
                 </p>
               </div>
 
