@@ -12,6 +12,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { CheckCircle, XCircle, ArrowRight } from "lucide-react";
 import { reportsApi } from "@/lib/services";
 import { CATEGORY_MAP } from "@/lib/types";
@@ -20,6 +22,10 @@ import { toast } from "sonner";
 export default function AceptarPage() {
   const queryClient = useQueryClient();
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [acceptComment, setAcceptComment] = useState("");
+  const [rejectComment, setRejectComment] = useState("");
+  const [showAcceptComment, setShowAcceptComment] = useState(false);
+  const [showRejectComment, setShowRejectComment] = useState(false);
 
   const { data: pendingReports, isLoading } = useQuery({
     queryKey: ["pending-reports"],
@@ -31,9 +37,12 @@ export default function AceptarPage() {
   });
 
   const acceptMutation = useMutation({
-    mutationFn: (id: number) => reportsApi.accept(id),
+    mutationFn: (data: { id: number; comment?: string }) => 
+      reportsApi.acceptWithComment(data.id, data.comment, true), // is_internal = true por defecto
     onSuccess: () => {
       toast.success("Reporte aceptado");
+      setAcceptComment("");
+      setShowAcceptComment(false);
       // Invalidar todas las queries de reportes
       queryClient.invalidateQueries({ queryKey: ["pending-reports"] });
       queryClient.invalidateQueries({ queryKey: ["reports-buscar"] });
@@ -48,9 +57,12 @@ export default function AceptarPage() {
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (id: number) => reportsApi.reject(id),
+    mutationFn: (data: { id: number; comment?: string }) => 
+      reportsApi.rejectWithComment(data.id, data.comment, true), // is_internal = true por defecto
     onSuccess: () => {
       toast.success("Reporte rechazado");
+      setRejectComment("");
+      setShowRejectComment(false);
       // Invalidar todas las queries de reportes
       queryClient.invalidateQueries({ queryKey: ["pending-reports"] });
       queryClient.invalidateQueries({ queryKey: ["reports-buscar"] });
@@ -71,6 +83,37 @@ export default function AceptarPage() {
       // Reload to get fresh reports
       queryClient.invalidateQueries({ queryKey: ["pending-reports"] });
       setCurrentIndex(0);
+    }
+    // Reset comment states
+    setAcceptComment("");
+    setRejectComment("");
+    setShowAcceptComment(false);
+    setShowRejectComment(false);
+  };
+
+  const handleAccept = () => {
+    if (!currentReport) return;
+    
+    if (showAcceptComment) {
+      acceptMutation.mutate({ 
+        id: currentReport.id, 
+        comment: acceptComment.trim() || undefined 
+      });
+    } else {
+      setShowAcceptComment(true);
+    }
+  };
+
+  const handleReject = () => {
+    if (!currentReport) return;
+    
+    if (showRejectComment) {
+      rejectMutation.mutate({ 
+        id: currentReport.id, 
+        comment: rejectComment.trim() || undefined 
+      });
+    } else {
+      setShowRejectComment(true);
     }
   };
 
@@ -217,39 +260,85 @@ export default function AceptarPage() {
             </div>
           </div>
 
+          {/* Comments Section */}
+          {(showAcceptComment || showRejectComment) && (
+            <div className="border-t border-border pt-6">
+              <div className="space-y-4">
+                <Label htmlFor="comment" className="text-sm font-medium">
+                  {showAcceptComment ? "Comentario de aceptación" : "Comentario de rechazo"} (opcional)
+                </Label>
+                <Textarea
+                  id="comment"
+                  placeholder="Agrega un comentario interno sobre la decisión tomada..."
+                  value={showAcceptComment ? acceptComment : rejectComment}
+                  onChange={(e) => {
+                    if (showAcceptComment) {
+                      setAcceptComment(e.target.value);
+                    } else {
+                      setRejectComment(e.target.value);
+                    }
+                  }}
+                  className="min-h-[100px]"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Este comentario será interno y solo visible para otros administradores.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4 border-t border-border pt-6">
             <Button
               size="lg"
-              onClick={() => acceptMutation.mutate(currentReport.id)}
+              onClick={handleAccept}
               disabled={
                 acceptMutation.isPending || rejectMutation.isPending
               }
               className="min-w-[180px] bg-green-600 hover:bg-green-700 text-white shadow-lg transform transition-all duration-200 hover:scale-[1.02]"
             >
               <CheckCircle className="mr-2 h-5 w-5" />
-              Aceptar reporte
+              {showAcceptComment ? "Confirmar Aceptación" : "Aceptar reporte"}
             </Button>
 
             <Button
               variant="destructive"
               size="lg"
-              onClick={() => rejectMutation.mutate(currentReport.id)}
+              onClick={handleReject}
               disabled={
                 acceptMutation.isPending || rejectMutation.isPending
               }
               className="min-w-[180px] bg-red-600 hover:bg-red-700 text-white shadow-lg transform transition-all duration-200 hover:scale-[1.02]"
             >
               <XCircle className="mr-2 h-5 w-5" />
-              Rechazar reporte
+              {showRejectComment ? "Confirmar Rechazo" : "Rechazar reporte"}
             </Button>
+
+            {(showAcceptComment || showRejectComment) && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  setShowAcceptComment(false);
+                  setShowRejectComment(false);
+                  setAcceptComment("");
+                  setRejectComment("");
+                }}
+                disabled={
+                  acceptMutation.isPending || rejectMutation.isPending
+                }
+                className="min-w-[180px]"
+              >
+                Cancelar
+              </Button>
+            )}
 
             <Button
               variant="secondary"
               size="lg"
               onClick={handleNext}
               disabled={
-                acceptMutation.isPending || rejectMutation.isPending
+                acceptMutation.isPending || rejectMutation.isPending || showAcceptComment || showRejectComment
               }
               className="min-w-[180px] shadow-md hover:shadow-lg transform transition-all duration-200 hover:scale-[1.02]"
             >

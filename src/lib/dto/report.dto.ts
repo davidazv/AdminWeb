@@ -36,9 +36,16 @@ export interface ReportComment {
   id: number;
   report_id: number;
   admin_id: number;
+  admin_name?: string;
   comment: string;
   is_internal: boolean;
   created_at: string;
+  updated_at: string;
+}
+
+export interface CreateCommentRequest {
+  comment: string;
+  is_internal?: boolean;
 }
 
 export interface ReportStatusHistory {

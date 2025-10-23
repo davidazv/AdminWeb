@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { reportsApi } from "@/lib/services";
 import { CATEGORY_MAP, STATUS_MAP } from "@/lib/types";
+import { ReportComments } from "@/components/Reports/ReportComments";
 import { toast } from "sonner";
 
 const updateSchema = z.object({
@@ -469,6 +470,11 @@ export default function ActualizarPage({
           </Button>
         </div>
       </form>
+
+      {/* Report Comments Section */}
+      <div className="mt-8">
+        <ReportComments reportId={reportId} />
+      </div>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

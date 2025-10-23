@@ -10,6 +10,8 @@ import {
   PaginatedResponse,
   UpdateReportRequest,
   DashboardStats,
+  ReportComment,
+  CreateCommentRequest,
 } from "@/lib/dto";
 import { CATEGORY_MAP, STATUS_MAP } from "@/lib/constants";
 
@@ -378,6 +380,74 @@ export const reportsApi = {
       evidence_url,
       is_anonymous: true,
     });
+    return data;
+  },
+
+  // ============================================
+  // COMENTARIOS
+  // ============================================
+
+  // Get comments for a report
+  getComments: async (reportId: number): Promise<ReportComment[]> => {
+    const { data } = await apiClient.get<ReportComment[]>(`/reports/${reportId}/comments`);
+    return data;
+  },
+
+  // Add comment to a report
+  addComment: async (reportId: number, commentData: CreateCommentRequest): Promise<ReportComment> => {
+    const { data } = await apiClient.post<ReportComment>(`/reports/${reportId}/comments`, commentData);
+    return data;
+  },
+
+  // Update a comment
+  updateComment: async (commentId: number, commentData: CreateCommentRequest): Promise<ReportComment> => {
+    const { data } = await apiClient.put<ReportComment>(`/reports/comments/${commentId}`, commentData);
+    return data;
+  },
+
+  // Delete a comment
+  deleteComment: async (commentId: number): Promise<void> => {
+    await apiClient.delete(`/reports/comments/${commentId}`);
+  },
+
+  // Accept report with optional comment
+  acceptWithComment: async (id: number, comment?: string, isInternal?: boolean): Promise<Report> => {
+    // Lista de administradores disponibles (puedes modificar estos IDs según tu sistema)
+    const availableAdmins = [1, 2, 3];
+    
+    // Seleccionar un administrador aleatorio
+    const randomAdminId = availableAdmins[Math.floor(Math.random() * availableAdmins.length)];
+    
+    const { data } = await apiClient.put<Report>(`/reports/admin/${id}`, {
+      status_id: 2,
+      assigned_admin_id: randomAdminId
+    });
+
+    // Agregar comentario si se proporcionó
+    if (comment && comment.trim()) {
+      await reportsApi.addComment(id, {
+        comment: comment.trim(),
+        is_internal: isInternal || false
+      });
+    }
+
+    return data;
+  },
+
+  // Reject report with optional comment
+  rejectWithComment: async (id: number, comment?: string, isInternal?: boolean): Promise<Report> => {
+    const { data } = await apiClient.put<Report>(`/reports/admin/${id}`, {
+      status_id: 3
+    });
+
+    // Agregar comentario si se proporcionó
+    if (comment && comment.trim()) {
+      await reportsApi.addComment(id, {
+        comment: comment.trim(),
+        is_internal: isInternal || false
+      });
+    }
+
     return data;
   },
 };
