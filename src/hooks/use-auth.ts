@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { authApi } from "@/lib/services";
 import { User } from "@/lib/dto";
+import { isValidRedirectUrl } from "@/lib/security-utils";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -26,10 +27,16 @@ export function useAuth() {
     setIsLoading(false);
   }, []);
 
-  const logout = () => {
+  const logout = (redirectUrl?: string) => {
     authApi.logout();
     setUser(null);
-    router.push("/login");
+    
+    // Validar URL de redirección para prevenir open redirects
+    const targetUrl = redirectUrl && typeof window !== 'undefined' 
+      ? (isValidRedirectUrl(redirectUrl, window.location.hostname) ? redirectUrl : "/login")
+      : "/login";
+    
+    router.push(targetUrl);
   };
 
   return {

@@ -6,7 +6,7 @@ Para ejecutar este proyecto frontend, necesitas configurar las siguientes variab
 
 ```bash
 # API Configuration
-NEXT_PUBLIC_API_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:3002
 ```
 
 **Nota:** Las variables que comienzan con `NEXT_PUBLIC_` son visibles en el cliente. Nunca pongas información sensible en estas variables. Reemplaza los valores de ejemplo con tu configuración real.
@@ -25,7 +25,7 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3002](http://localhost:3002) with your browser to see the result.
 
 ## Troubleshooting
 

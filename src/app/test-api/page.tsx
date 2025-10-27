@@ -26,7 +26,7 @@ export default function TestApiPage() {
     try {
       console.log("🧪 Probando conexión directa con fetch...");
       
-      const response = await fetch("http://localhost:3000/auth/admin/login", {
+      const response = await fetch("http://localhost:3002/auth/admin/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +79,7 @@ export default function TestApiPage() {
       <div className="mt-6">
         <h2 className="text-lg font-semibold mb-2">URL configurada:</h2>
         <p className="bg-yellow-100 p-2 rounded">
-          {process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"}
+          {process.env.NEXT_PUBLIC_API_URL || "http://localhost:3002"}
         </p>
       </div>
     </div>
